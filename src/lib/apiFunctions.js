@@ -13,7 +13,7 @@ Object.keys(config.stratum.coins).forEach(coin => {
 })
 
 const networkStats = async (coin) => {
-  const block = await upstreams[coin].getBlockByNumber('latest')
+  const block = await upstreams[coin].getBlockNumber()
   const difficulty = block.difficulty
   return {
     height: block.number,
@@ -36,8 +36,11 @@ const getPoolStats = async (coin, cb) => {
     }
   }
   // network stats
-  stats.network = await networkStats(coin)
-
+  try {
+    stats.network = await networkStats(coin)
+  } catch (e) {
+    console.log(e)
+  }
   // pool hashrate
   const dbShare = await Hashrate.find({ coin, createdAt: { $gt: new Date(Date.now() - (600 * 1000)) } })
   if (dbShare) {
