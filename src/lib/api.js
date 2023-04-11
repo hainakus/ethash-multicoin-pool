@@ -18,26 +18,26 @@ app.use(bodyParser.json())
 app.use(cors())
 
 // GET
-app.get('/:coin/stats', catchAsync(async (req, res) => {
+app.get('/api/:coin/stats', catchAsync(async (req, res) => {
   api.getPoolStats(req.params.coin, (stats) => {
     res.json(stats).end()
   })
 }))
 
-app.get('/:coin/accounts/:address', catchAsync(async (req, res) => {
+app.get('/api/:coin/accounts/:address', catchAsync(async (req, res) => {
   api.getMinerStats(req.params.coin, req.params.address, (err, stats) => {
     if (err) return res.status(404).json({ error: err.message }).end()
     res.json(stats).end()
   })
 }))
 
-app.get('/:coin/blocks', catchAsync(async (req, res) => {
+app.get('/api/:coin/blocks', catchAsync(async (req, res) => {
   api.getPoolBlocks(req.params.coin, (blocks) => {
     res.json(blocks).end()
   })
 }))
 
-app.get('/:coin/payments', catchAsync(async (req, res) => {
+app.get('/api/:coin/payments', catchAsync(async (req, res) => {
   api.getPoolPayments(req.params.coin, (payments) => {
     res.json(payments.map(payment => {
       return {
@@ -50,13 +50,13 @@ app.get('/:coin/payments', catchAsync(async (req, res) => {
   })
 }))
 
-app.get('/:coin/miners', catchAsync(async (req, res) => {
+app.get('/api/:coin/miners', catchAsync(async (req, res) => {
   api.getPoolMiners(req.params.coin, (miners) => {
     res.json(miners).end()
   })
 }))
 
-app.get('/coins', catchAsync(async (req, res) => {
+app.get('/api/coins', catchAsync(async (req, res) => {
   api.getPoolCoins(coins => {
     res.json(coins).end()
   })
@@ -77,7 +77,11 @@ const server = !config.api.ssl
   }, app)
 
 // Socket API
-const io = SocketIO(server)
+const io = SocketIO(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }});
 io.on('connection', (socket) => {
   socket.on('stats', (coin) => {
     api.getPoolStats(coin, (stats) => {
